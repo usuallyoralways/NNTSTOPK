@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="build">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/TarsosLSH-master/build/TarsosLSH-0.9-bin.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/TarsosLSH-master/build/TarsosLSH-0.9.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

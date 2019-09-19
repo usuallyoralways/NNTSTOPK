@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="eclipse-collections-7.1.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/TarsosLSH/mapdb/eclipse-collections-7.1.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="TarsosLSH-0.9">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/TarsosLSH-0.9.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/TarsosLSH-0.9.jar!/" />
+    </SOURCES>
+  </library>
+</component>

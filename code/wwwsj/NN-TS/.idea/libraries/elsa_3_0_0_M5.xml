@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="elsa-3.0.0-M5">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/TarsosLSH/mapdb/elsa-3.0.0-M5.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
