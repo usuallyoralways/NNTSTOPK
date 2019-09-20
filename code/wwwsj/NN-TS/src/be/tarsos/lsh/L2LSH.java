@@ -34,7 +34,9 @@ public class L2LSH extends BashLSH {
 
         setFamily();
         setMeasure();
-        readDataset(false);
+        readDataset(true);
+
+
     }
 
 
@@ -42,9 +44,33 @@ public class L2LSH extends BashLSH {
         String filePate= Constant.basePath+"Mnist/Mnist.ds";
         String queryPate= Constant.basePath+"Mnist/Mnist.q";
         L2LSH lsh = new L2LSH();
-        lsh.initL2LSH(10,50,filePate);
+        lsh.setW(51);
+        lsh.initL2LSH(-10,50,filePate);
+        System.out.println();
+        lsh.setNumberOfHashes(2);
+        lsh.setNumberOfHashTables(5);
         lsh.setQueriesPath(queryPate);
-        lsh.readQueries(false);
+        lsh.readQueries(true);
+        lsh.setNumberOfNeighbours(10);
+        lsh.setNeighboursSize(10);
+
+
+        lsh.buildIndex(lsh.getNumberOfHashes(),lsh.getNumberOfHashTables());
+
+        System.out.println(123);
+
+        if(lsh.getQueries() != null){
+            for(Vector query:lsh.getQueries()){
+                List<Vector> neighbours = lsh.query(query, lsh.getNumberOfNeighbours());
+                System.out.print(query.getKey()+";");
+                for(Vector neighbour:neighbours){
+                    System.out.print(neighbour.getKey() + ";");
+                }
+                System.out.print("\n");
+            }
+        }
+        lsh.benchmark();
+
 
     }
 
@@ -52,10 +78,15 @@ public class L2LSH extends BashLSH {
         setMeasure(new EuclideanDistance());
         setFamily();
     }
-    public void setFamily(){
-        int w = (int) (10 * getRadius());
-        w = w == 0 ? 1 : w;
-        HashFamily hashFamily = new EuclidianHashFamily(w,getDimensions());
-        setFamily(hashFamily);
+    public void setFamily() {
+        if (getRadius() < 0) {
+            HashFamily hashFamily = new EuclidianHashFamily(getW(), getDimensions());
+            setHashFamily(hashFamily);
+        } else {
+            int w = (int) (10 * getRadius());
+            w = w == 0 ? 1 : w;
+            HashFamily hashFamily = new EuclidianHashFamily(w, getDimensions());
+            setHashFamily(hashFamily);
+        }
     }
 }

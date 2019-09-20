@@ -61,6 +61,7 @@ class HashTable implements Serializable {
 		hashTable = new HashMap<String, List<Vector>>();
 		this.hashFunctions = new HashFunction[numberOfHashes];
 		for(int i=0;i<numberOfHashes;i++){
+
 			hashFunctions[i] = family.createHashFunction();
 		}
 		this.family = family;

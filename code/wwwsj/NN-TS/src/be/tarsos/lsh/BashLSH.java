@@ -3,7 +3,6 @@ package be.tarsos.lsh;
 import be.tarsos.lsh.families.DistanceComparator;
 import be.tarsos.lsh.families.DistanceMeasure;
 import be.tarsos.lsh.families.HashFamily;
-import DW.DeterministicWave;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -33,23 +32,35 @@ public class BashLSH {
     private int dimensions;
     private DistanceMeasure measure;
     private int timeout = 40; //seconds timeout for radius search.
-    private HashFamily family;
+//    private HashFamily family;
 
     private boolean benchmark;
     private boolean printHelp;
     private boolean linear;
 
     private Index index;
-    private final HashFamily hashFamily;
+    private HashFamily hashFamily;
+
+    private int neighboursSize; //numberOfNeighbours
+    private int W;
+
+
+
 
     public BashLSH(List<Vector> dataset, HashFamily hashFamily) {
 
         this.dataset = dataset;
         this.hashFamily = hashFamily;
     }
+    public BashLSH() {
+    }
 
     public void readDataset(boolean firstColumnIsKey){
-        readDataset(datasetPath,Integer.MAX_VALUE,false);
+        dataset =readDataset(datasetPath,Integer.MAX_VALUE,firstColumnIsKey);
+    }
+
+    public void readQueries(boolean firstColumnIsKey){
+        queries = readDataset(queriesPath,Integer.MAX_VALUE,firstColumnIsKey);
     }
 
 
@@ -69,10 +80,10 @@ public class BashLSH {
 
     /**
      * Benchmark the current LSH construction.
-     * @param neighboursSize the expected size of the neighbourhood.
-     * @param measure  The measure to use to check for correctness.
+     //* @param neighboursSize the expected size of the neighbourhood.
+     //* @param measure  The measure to use to check for correctness.
      */
-    public void benchmark(int neighboursSize, DistanceMeasure measure){
+    public void benchmark(){
         long startTime = 0;
         double linearSearchTime = 0;
         double lshSearchTime = 0;
@@ -226,6 +237,7 @@ public class BashLSH {
 
 
         int dimensions = firstColumnIsKey ? data.get(0).length - 1 : data.get(0).length;
+
         int startIndex = firstColumnIsKey ? 1 : 0;
         for(String[] row : data){
             Vector item = new Vector(dimensions);
@@ -361,6 +373,11 @@ public class BashLSH {
         this.dimensions = dimensions;
     }
 
+    public void setDimensions(){
+        dimensions = queries.get(0).getDimensions();
+    }
+
+
     public DistanceMeasure getMeasure() {
         return measure;
     }
@@ -377,13 +394,7 @@ public class BashLSH {
         this.timeout = timeout;
     }
 
-    public HashFamily getFamily() {
-        return family;
-    }
 
-    public void setFamily(HashFamily family) {
-        this.family = family;
-    }
 
     public boolean isBenchmark() {
         return benchmark;
@@ -435,5 +446,25 @@ public class BashLSH {
 
     public void setQueriesPath(String queriesPath) {
         this.queriesPath = queriesPath;
+    }
+
+    public void setHashFamily(HashFamily hashFamily) {
+        this.hashFamily = hashFamily;
+    }
+
+    public int getW() {
+        return W;
+    }
+
+    public void setW(int w) {
+        W = w;
+    }
+
+    public int getNeighboursSize() {
+        return neighboursSize;
+    }
+
+    public void setNeighboursSize(int neighboursSize) {
+        this.neighboursSize = neighboursSize;
     }
 }
