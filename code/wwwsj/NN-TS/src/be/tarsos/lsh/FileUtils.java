@@ -37,6 +37,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -266,6 +267,7 @@ public final class FileUtils {
 			inputLine = in.readLine();
 			while (inputLine != null) {
 				lineNumber++;
+				System.out.println(lineNumber);
 				final String[] row = inputLine.split(separator);
 				if (expectedColumns == -1 || expectedColumns == row.length) {
 					data.add(row);
@@ -277,6 +279,55 @@ public final class FileUtils {
 				inputLine = in.readLine();
 			}
 			
+		} catch (final IOException i1) {
+			LOG.severe("Can't open file:" + fileName);
+		} finally {
+			if(in!=null){
+				try {
+					in.close();
+				} catch (IOException e) {
+					//ignore
+				}
+			}
+		}
+		return data;
+	}
+
+
+	public static List<String[]> readCSVFile(final String fileName, final String separator,
+											 final int expectedColumns,int colnumsNum) {
+		final List<String[]> data = new ArrayList<String[]>();
+		FileReader fileReader = null;
+		BufferedReader in = null;
+		try {
+			final File file = new File(fileName);
+			if (!file.exists()) {
+				throw new IllegalArgumentException("File '" + fileName + "' does not exist");
+			}
+			fileReader = new FileReader(file);
+			in = new BufferedReader(fileReader);
+			String inputLine;
+			int lineNumber = 0;
+			inputLine = in.readLine();
+			while (inputLine != null) {
+				lineNumber++;
+				if(lineNumber%100000==0){
+					System.gc();
+				}
+				System.out.println(lineNumber);
+				String[] row = inputLine.split(separator);
+				if (expectedColumns == -1 || expectedColumns == row.length) {
+					data.add(Arrays.copyOfRange(row,0,colnumsNum));
+
+				} else {
+					throw new AssertionError("Unexpected row length (line " + lineNumber + " ). "
+							+ "Expected:" + expectedColumns + " real " + row.length
+							+ ". CVS-file incorrectly formatted?");
+				}
+
+				inputLine = in.readLine();
+			}
+
 		} catch (final IOException i1) {
 			LOG.severe("Can't open file:" + fileName);
 		} finally {

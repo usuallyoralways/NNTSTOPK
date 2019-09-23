@@ -56,11 +56,11 @@ public class BashLSH {
     }
 
     public void readDataset(boolean firstColumnIsKey){
-        dataset =readDataset(datasetPath,Integer.MAX_VALUE,firstColumnIsKey);
+        dataset =readDataset(datasetPath,Integer.MAX_VALUE,firstColumnIsKey,dimensions);
     }
 
     public void readQueries(boolean firstColumnIsKey){
-        queries = readDataset(queriesPath,Integer.MAX_VALUE,firstColumnIsKey);
+        queries = readDataset(queriesPath,Integer.MAX_VALUE,firstColumnIsKey,dimensions);
     }
 
 
@@ -135,7 +135,8 @@ public class BashLSH {
         int hashTables = index.getNumberOfHashTables();
 
         //System.out.printf("%10s%15s%10s%10s%10s%10s%10s%10s\n","#hashes","#hashTables","Correct","Touched","linear","lsh","Precision","Recall");
-        System.out.printf("%10d%15d%9.2f%%%9.2f%%%9.4fs%9.4fs%9.2f%%%9.2f%%\n",hashes,hashTables,percentageCorrect,percentageTouched,linearSearchTime,lshSearchTime,precision,recall);
+        System.out.printf("%10d%15d%9.2f%%%9.2f%%%15.4fs%9.4fs%9.2f%%%9.2f%%\n",
+                hashes,hashTables,percentageCorrect,percentageTouched,linearSearchTime,lshSearchTime,precision,recall);
     }
 
     /**
@@ -217,9 +218,9 @@ public class BashLSH {
 
 
 
-    public static List<Vector> readDataset(String file,int maxSize,boolean firstColumnIsKey) {
+    public static List<Vector> readDataset(String file,int maxSize,boolean firstColumnIsKey,int dimensions) {
         List<Vector> ret = new ArrayList<Vector>();
-        List<String[]> data = FileUtils.readCSVFile(file, " ", -1);
+        List<String[]> data = FileUtils.readCSVFile(file, " ", -1,dimensions+1);
         if(data.size() > maxSize){
             data = data.subList(0, maxSize);
         }
@@ -236,7 +237,7 @@ public class BashLSH {
         System.out.println(firstColumnIsKey);
 
 
-        int dimensions = firstColumnIsKey ? data.get(0).length - 1 : data.get(0).length;
+        int datadimensions = firstColumnIsKey ? data.get(0).length - 1 : data.get(0).length;
 
         int startIndex = firstColumnIsKey ? 1 : 0;
         for(String[] row : data){
@@ -244,6 +245,7 @@ public class BashLSH {
             if(firstColumnIsKey){
                 item.setKey(row[0]);
             }
+
             for (int d = startIndex; d < row.length; d++) {
                 double value = Double.parseDouble(row[d]);
                 item.set(d - startIndex, value);
@@ -374,7 +376,7 @@ public class BashLSH {
     }
 
     public void setDimensions(){
-        dimensions = queries.get(0).getDimensions();
+        dimensions = dataset.get(0).getDimensions();
     }
 
 

@@ -15,6 +15,7 @@ import be.tarsos.lsh.families.HashFamily;
 
 import java.util.List;
 import Constant.*;
+import be.tarsos.lsh.families.InnerProductDistance;
 
 public class L2LSH extends BashLSH {
 
@@ -27,14 +28,14 @@ public class L2LSH extends BashLSH {
 
     }
 
-    public void initL2LSH(double radius,int dimensions,String datasetPath){
+    public void initL2LSH(double radius,String datasetPath){
         setRadius(radius);
-        setDimensions(dimensions);
         setDatasetPath(datasetPath);
 
-        setFamily();
+        setHashFamily();
         setMeasure();
         readDataset(true);
+        setDimensions();
 
 
     }
@@ -44,8 +45,7 @@ public class L2LSH extends BashLSH {
         String filePate= Constant.basePath+"Mnist/Mnist.ds";
         String queryPate= Constant.basePath+"Mnist/Mnist.q";
         L2LSH lsh = new L2LSH();
-        lsh.setW(51);
-        lsh.initL2LSH(-10,50,filePate);
+        lsh.initL2LSH(-10,filePate);
         System.out.println();
         lsh.setNumberOfHashes(2);
         lsh.setNumberOfHashTables(5);
@@ -75,10 +75,9 @@ public class L2LSH extends BashLSH {
     }
 
     public void setMeasure(){
-        setMeasure(new EuclideanDistance());
-        setFamily();
+        setMeasure(new InnerProductDistance());
     }
-    public void setFamily() {
+    public void setHashFamily() {
         if (getRadius() < 0) {
             HashFamily hashFamily = new EuclidianHashFamily(getW(), getDimensions());
             setHashFamily(hashFamily);
