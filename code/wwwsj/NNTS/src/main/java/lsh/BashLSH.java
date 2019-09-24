@@ -4,6 +4,8 @@ import lsh.families.DistanceComparator;
 import lsh.families.DistanceMeasure;
 import lsh.families.HashFamily;
 import lsh.Vector;
+import topkmips.lsh.Hash;
+
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -141,7 +143,7 @@ public class BashLSH {
 
 
 
-    public void benchmarkWithFile(List<List<Integer>> groundTruth){
+    public void benchmarkWithFile(List<Vector> groundTruth){
         long startTime = 0;
         double linearSearchTime = 0;
         double lshSearchTime = 0;
@@ -152,48 +154,59 @@ public class BashLSH {
         //int intersectionSize = 0;
 
         for (Vector query : queries){
-            Set<Vector> set = new HashSet<Vector>();
+            Set<Integer> set = new HashSet<>();
             int key = Integer.valueOf(query.getKey());
+            Vector linearResultKeyVector = groundTruth.get(key-1);
 
-            List<Integer> linearResultKey = groundTruth.get(key-1);
+            List<Integer> linearResultKey = new ArrayList<>();
+            for (int i = 0;i< linearResultKeyVector.getDimensions();i++){
+                linearResultKey.add((int) linearResultKeyVector.get(i));
+            }
+            System.out.println(key);
             List<Vector> lshResult = index.query(query,neighboursSize);
+
             List<Integer> lshResultKey = new ArrayList<>();
             for (Vector item : lshResult){
+                System.out.println(item.getKey());
                 lshResultKey.add(Integer.valueOf(item.getKey()));
             }
 
+            set.addAll(linearResultKey);
+            set.addAll(lshResultKey);
 
-        }
-        for(int i = 0 ; i < dataset.size() ; i++){
-            Vector query = dataset.get(i);
-            startTime = System.currentTimeMillis();
-            List<Vector> lshResult = index.query(query,neighboursSize);
-            lshSearchTime += System.currentTimeMillis() - startTime;
+            for (Integer integer: linearResultKey){
+                System.out.print(integer+" ");
+            }
+            System.out.print("\n");
+            for (Integer integer: lshResultKey){
+                System.out.print(integer+" ");
+            }
+            System.out.print("\n");
 
-            startTime = System.currentTimeMillis();
-            List<Vector> linearResult = linearSearch(dataset,query,neighboursSize,measure);
-            linearSearchTime += System.currentTimeMillis() - startTime;
-
-            Set<Vector> set = new HashSet<Vector>();
-            set.addAll(lshResult);
-            set.addAll(linearResult);
             //intersectionSize += set.size();
             //In the best case, LSH result and linear result contain the exact same elements.
             //The number of false positives is the number of vectors that exceed the number of linear results.
-            falsePositives += set.size() - linearResult.size();
+            falsePositives += set.size() - linearResultKey.size();
             //The number of true positives is Union of results - intersection.
-            truePositives += lshResult.size() + linearResult.size() - set.size();
+            truePositives += lshResultKey.size() + linearResultKey.size() - set.size();
             //The number of false Negatives the number of vectors that exceed the number of lsh results .
-            falseNegatives +=  set.size() - lshResult.size();
+            falseNegatives +=  set.size() - lshResultKey.size();
 
             //result is only correct if all nearest neighbours are the same (rather strict).
             boolean correct = true;
-            for(int j = 0 ; j < Math.min(lshResult.size(),linearResult.size()); j++){
-                correct = correct && lshResult.get(j)== linearResult.get(j);
+            for(int j = 0 ; j < Math.min(lshResult.size(),linearResultKey.size()); j++){
+                correct = correct && lshResultKey.get(j)== linearResultKey.get(j);
             }
             if(correct){
                 numbercorrect++;
             }
+
+
+            double precision = truePositives / Double.valueOf(truePositives+falsePositives) * 100;
+            double recall = truePositives / Double.valueOf(truePositives+falseNegatives) * 100;
+
+            System.out.printf("%9.2f%%%9.2f%%\n",precision,recall);
+
         }
         double numberOfqueries = dataset.size();
         double dataSetSize = dataset.size();
@@ -201,15 +214,17 @@ public class BashLSH {
         double recall = truePositives / Double.valueOf(truePositives+falseNegatives) * 100;
         double percentageCorrect = numbercorrect / dataSetSize * 100;
         double percentageTouched = index.getTouched()/numberOfqueries/dataSetSize*100;
-        linearSearchTime/=1000.0;
-        lshSearchTime/=1000.0;
+
         int hashes = index.getNumberOfHashes();
         int hashTables = index.getNumberOfHashTables();
 
         //System.out.printf("%10s%15s%10s%10s%10s%10s%10s%10s\n","#hashes","#hashTables","Correct","Touched","linear","lsh","Precision","Recall");
         System.out.printf("%10d%15d%9.2f%%%9.2f%%%15.4fs%9.4fs%9.2f%%%9.2f%%\n",
                 hashes,hashTables,percentageCorrect,percentageTouched,linearSearchTime,lshSearchTime,precision,recall);
+
+
     }
+
 
     /**
      * Find the nearest neighbours for a query in the index.
@@ -322,6 +337,61 @@ public class BashLSH {
                 double value = Double.parseDouble(row[d]);
                 item.set(d - startIndex, value);
             }
+            ret.add(item);
+        }
+        return ret;
+    }
+
+
+    public static List<Vector> readGroundTruth(String file,int maxSize,boolean firstColumnIsKey,int dimensions) {
+
+        List<Vector> ret = new ArrayList<Vector>();
+
+        int count = 0;
+        List<String[]> data = FileUtils.readCSVFile(file, " ", -1,dimensions*2);
+        if(data.size() > maxSize){
+            data = data.subList(0, maxSize);
+        }
+//		firstColumnIsKey = false;
+//		try{
+//			Double.parseDouble(data.get(0)[0]);
+//		}catch(Exception e){
+//			firstColumnIsKey = true;
+//		}
+
+        System.out.println(firstColumnIsKey);
+        System.out.println(firstColumnIsKey);
+        System.out.println(firstColumnIsKey);
+        System.out.println(firstColumnIsKey);
+
+        int m = Integer.valueOf(data.get(0)[0]);
+        int n = Integer.valueOf(data.get(0)[1]);
+
+
+
+        int datadimensions = firstColumnIsKey ? data.get(0).length - 1 : data.get(0).length;
+
+        int startIndex = firstColumnIsKey ? 1 : 0;
+        for(String[] row : data){
+            if (count==0){
+                count++;
+                continue;
+            }
+            Vector item = new Vector(dimensions);
+            if(firstColumnIsKey){
+                item.setKey(row[0]);
+            }else {
+                item.setKey(String.valueOf(count));
+            }
+
+            for (int d = startIndex; d < row.length; d++) {
+                System.out.println(d);
+                if (d%2==0) {
+                    double value = Double.parseDouble(row[d]);
+                    item.set((d - startIndex)/2, value);
+                }
+            }
+            count++;
             ret.add(item);
         }
         return ret;

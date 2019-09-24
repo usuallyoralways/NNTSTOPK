@@ -88,8 +88,8 @@ public class ALSH extends BashLSH{
 
 
         System.out.println();
-        lsh.setNumberOfHashes(1);
-        lsh.setNumberOfHashTables(512);
+        lsh.setNumberOfHashes(4);
+        lsh.setNumberOfHashTables(3);
         lsh.setQueriesPath(queryPate);
         lsh.setW(50);
         lsh.readQueries(true);
@@ -113,19 +113,27 @@ public class ALSH extends BashLSH{
         lsh.buildIndex(lsh.getNumberOfHashes(),lsh.getNumberOfHashTables());
 
 
-        if(lsh.getQueries() != null){
-            for(Vector query:lsh.getQueries()){
-                List<Vector> neighbours = lsh.query(query, lsh.getNumberOfNeighbours());
-                System.out.print(query.getKey()+";");
-                for(Vector neighbour:neighbours){
-                    System.out.print(neighbour.getKey() + ";");
-                }
-                System.out.print("\n");
-            }
-        }
+//        if(lsh.getQueries() != null){
+//            for(Vector query:lsh.getQueries()){
+//                List<Vector> neighbours = lsh.query(query, lsh.getNumberOfNeighbours());
+//                System.out.print(query.getKey()+";");
+//                for(Vector neighbour:neighbours){
+//                    System.out.print(neighbour.getKey() + ";");
+//                }
+//                System.out.print("\n");
+//            }
+//        }
 
 
         lsh.changeVectorAgain();
+
+
+        List<Vector> vectorList= lsh.readGroundTruth(Constant.basePath+"Mnist/Mnist.mip",Integer.MAX_VALUE,false,10);
+        for (int i=0;i<5;i++){
+            System.out.println(vectorList.get(i).toString());
+        }
+
+        lsh.benchmarkWithFile(vectorList);
         lsh.benchmark();
     }
 
@@ -218,6 +226,7 @@ public class ALSH extends BashLSH{
         } else {
             int w = (int) (10 * getRadius());
             w = w == 0 ? 1 : w;
+
 
             HashFamily hashFamily = new EuclidianHashFamily(w, getDimensions());
             setHashFamily(hashFamily);
